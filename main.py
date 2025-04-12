@@ -2,6 +2,7 @@ import discord
 import datetime
 import os
 from discord.ext import commands
+from zoneinfo import ZoneInfo
 
 # Get your user ID and token securely from environment variables
 YOUR_USER_ID = int(os.getenv("OWNER_ID"))
@@ -30,19 +31,19 @@ async def on_voice_state_update(member, before, after):
         # Joined a VC
         if before.channel is None and after.channel is not None:
             await user.send(
-                f"👀 **{member.display_name}** just joined **{after.channel.name}** in *{after.channel.guild.name}* at *{datetime.datetime.now().strftime('%c')}*."
+                f"👀 **{member.display_name}** just joined **{after.channel.name}** in *{after.channel.guild.name}* at *{datetime.datetime.now(ZoneInfo('Asia/Dubai')).strftime('%c')}*."
             )
 
         # Left a VC
         elif before.channel is not None and after.channel is None:
             await user.send(
-                f"🚪 **{member.display_name}** just left **{before.channel.name}** in *{before.channel.guild.name}* at *{datetime.datetime.now().strftime('%c')}*."
+                f"🚪 **{member.display_name}** just left **{before.channel.name}** in *{before.channel.guild.name}* at *{datetime.datetime.now(ZoneInfo('Asia/Dubai')).strftime('%c')}*."
             )
 
         # Switched VC
         elif before.channel != after.channel:
             await user.send(
-                f"🔀 **{member.display_name}** switched from **{before.channel.name}** to **{after.channel.name}** in *{after.channel.guild.name}* at *{datetime.datetime.now().strftime('%c')}*."
+                f"🔀 **{member.display_name}** switched from **{before.channel.name}** to **{after.channel.name}** in *{after.channel.guild.name}* at *{datetime.datetime.now(ZoneInfo('Asia/Dubai')).strftime('%c')}*."
             )
 
     except Exception as e:
