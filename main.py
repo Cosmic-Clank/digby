@@ -11,8 +11,12 @@ YOUR_USER_ID = int(os.getenv("OWNER_ID"))
 intents = discord.Intents.default()
 intents.voice_states = True
 intents.members = True
+intents.message_content = True  # Added for command processing
 
 bot = commands.Bot(command_prefix="!", intents=intents)
+
+# Dictionary to store debt amounts (member_id: amount_owed)
+debt_tracker = {}
 
 
 @bot.event
@@ -49,6 +53,50 @@ async def on_voice_state_update(member, before, after):
     except Exception as e:
         print(f"❌ Failed to send DM: {e}")
 
+
+@bot.command()
+async def dwai(ctx, *, member_name=None):
+    # Only allow the bot owner to use this command
+    if ctx.author.id != YOUR_USER_ID:
+        await ctx.send("❌ You don't have permission to use this command!")
+        return
+
+    if member_name is None:
+        await ctx.send("❌ Please provide a member name or 'all'!")
+        return
+
+    try:
+        if member_name.lower() == "all":
+            if not debt_tracker:
+                await ctx.send("✅ No debts recorded yet!")
+                return
+
+            debt_list = "\n".join(
+                f"{(await bot.fetch_user(member_id)).display_name}: {amount} DHS"
+                for member_id, amount in debt_tracker.items()
+            )
+            await ctx.send(f"📊 Current debts:\n{debt_list}")
+        else:
+            # Find member by name (case-insensitive)
+            member = discord.utils.find(
+                lambda m: m.display_name.lower() == member_name.lower(
+                ) or m.name.lower() == member_name.lower(),
+                ctx.guild.members
+            )
+
+            if not member:
+                await ctx.send(f"❌ Couldn't find member '{member_name}'!")
+                return
+
+            # Add 10 DHS to member's debt
+            debt_tracker[member.id] = debt_tracker.get(member.id, 0) + 10
+            await ctx.send(
+                f"💸 Added 10 DHS to {member.display_name}'s debt. Total owed: {debt_tracker[member.id]} DHS"
+            )
+
+    except Exception as e:
+        await ctx.send(f"❌ An error occurred: {e}")
+        print(f"❌ Error in dwai command: {e}")
 
 # Run the bot using secret token
 bot.run(os.getenv("BOT_TOKEN"))
