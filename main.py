@@ -71,11 +71,17 @@ async def dwai(ctx, *, member_name=None):
                 await ctx.send("✅ No debts recorded yet!")
                 return
 
-            debt_list = "\n".join(
-                f"{(await bot.fetch_user(member_id)).display_name}: {amount} DHS"
-                for member_id, amount in debt_tracker.items()
-            )
-            await ctx.send(f"📊 Current debts:\n{debt_list}")
+            debt_list = []
+            for member_id, amount in debt_tracker.items():
+                try:
+                    member = await bot.fetch_user(member_id)
+                    debt_list.append(f"{member.display_name}: {amount} DHS")
+                except discord.NotFound:
+                    debt_list.append(
+                        f"Unknown User (ID: {member_id}): {amount} DHS")
+            debt_message = "\n".join(
+                debt_list) if debt_list else "✅ No debts recorded yet!"
+            await ctx.send(f"📊 Current debts:\n{debt_message}")
         else:
             # Find member by name (case-insensitive)
             member = discord.utils.find(
