@@ -121,6 +121,7 @@ async def dwai(ctx, *, member_name=None):
                 except discord.NotFound:
                     debt_list.append(
                         f"Unknown User (ID: {member_id}): {amount} DHS")
+            debt_list.sort(key=lambda x: int(x.split(": ")[1].split(" ")[0]))
             debt_message = "\n".join(
                 debt_list) if debt_list else "✅ No debts recorded yet!"
             await ctx.send(f"📊 Current debts:\n{debt_message}")
