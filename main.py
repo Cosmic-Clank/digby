@@ -1,13 +1,13 @@
 import random
-import wave
 import discord
 import datetime
 import os
 from discord.ext import commands
 from discord.ext import voice_recv
-from zoneinfo import ZoneInfo
 from dotenv import load_dotenv
 import json
+from pathlib import Path
+import sys
 
 import syncedlyrics
 load_dotenv()
@@ -25,6 +25,17 @@ bot = commands.Bot(command_prefix="!", intents=intents)
 
 # Dictionary to store debt amounts (member_id: amount_owed)
 debt_tracker = {}
+
+
+def project_root() -> Path:
+    # If frozen by PyInstaller etc.
+    if getattr(sys, "frozen", False):
+        return Path(sys._MEIPASS)  # type: ignore[attr-defined]
+    # When running from source
+    return Path(__file__).resolve().parent
+
+
+ROOT = project_root()
 
 
 @bot.event
@@ -63,7 +74,7 @@ async def on_voice_state_update(member, before, after):
         print(f"❌ Failed to send DM: {e}")
 
 
-DEBT_FILE = "debt_tracker.json"
+DEBT_FILE = ROOT / "debt_tracker.json"
 
 
 def load_debt():
@@ -161,7 +172,7 @@ cuss_list = [
     "Fuck off, {name}, you’re a slimy, ass-licking failure who reeks of desperation",
     "You’re a fucking disgrace, {name}, a moldy, cum-soaked rag not even rats would touch",
     "Eat shit and die, {name}, you’re a putrid, cock-sucking leech on society’s balls",
-    "Go crawl back to your shithole, {name}, you’re a fucking insult to every living thing"
+    "Go crawl back to your shithole, {name}, you’re a fucking insult to every living thing",
 ]
 
 
@@ -188,15 +199,25 @@ async def on_message(message):
         return
 
     # Example: if someone says "sybau"
-    if "sybau" in message.content.lower():
+    sent_message = message.content.lower()
+    if "sybau" in sent_message:
         await message.channel.send(f"BRO {message.author.display_name.upper()} YOU SHUT YOUR BITCHASS UP MF YOU SOUND GAY AS FUCK!")
 
     # Example: if someone says "goodnight"
-    if "goodnight" in message.content.lower():
+    if "goodnight" in sent_message or "gn" in sent_message or "good night" in sent_message or "gnite" in sent_message:
         await message.channel.send("🌙 Sweet dreams!")
 
-    if "wrap" in message.content.lower():
+    if "goodmorning" in sent_message or "gm" in sent_message or "good morning" in sent_message:
+        await message.channel.send("🎂 Good morning muffins!")
+
+    if "wrap" in sent_message:
         await message.channel.send("MF shut up some people aren't comfortable talking about their... you know what 🩸.")
+
+    if "sugarbun" in sent_message:
+        await message.channel.send("Sugarbun my love <3")
+
+    if "type shi" in sent_message or "type shit" in sent_message or "typeshi" in sent_message or "typeshit" in sent_message:
+        await message.channel.send("TYPE SHIT BRO TYPE SHIT 💩")
 
     # Make sure normal commands still work
     await bot.process_commands(message)
@@ -292,10 +313,9 @@ async def leave(ctx):
 
 @bot.command()
 async def mazak(ctx):
-    """Send the mazak.png image to the chat."""
-    image_path = "assets/images" + \
-        random.choice(["/mazak1.png", "/mazak2.png",
-                      "/mazak3.png", "/mazak4.png"])
+    """Send the mazak image to the chat."""
+    image_path = ROOT / "assets/images" / \
+        random.choice(["mazak1.png", "mazak2.png", "mazak3.png", "mazak4.png"])
     if os.path.exists(image_path):
         await ctx.send("👐 MAZAK THA 👐")
         await ctx.send(file=discord.File(image_path))
@@ -311,7 +331,7 @@ houses = {
     "slytherin": 0
 }
 
-HOUSE_FILE = "house_points.json"
+HOUSE_FILE = ROOT / "house_points.json"
 
 
 def load_house_points():
@@ -371,7 +391,7 @@ async def housetally(ctx):
 
 @bot.command()
 async def bye(ctx):
-    gif_path = "assets/videos/bye.gif"
+    gif_path = ROOT / "assets/videos/bye.gif"
     if os.path.exists(gif_path):
         await ctx.send(file=discord.File(gif_path))
     else:
